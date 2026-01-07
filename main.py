@@ -84,10 +84,10 @@ class face_recog_sys:
         img7 = img7.resize((150,150))
         self.photoimg7 = ImageTk.PhotoImage(img7)
 
-        b5= Button(bg_img1,image= self.photoimg7,borderwidth=0,cursor= "hand2")
+        b5= Button(bg_img1,image= self.photoimg7,borderwidth=0,cursor= "hand2", command=self.exit_app)
         b5.place(x=710,y=530,width=110,height=100)
 
-        b5_1 = Button(bg_img1,text="YOUR WAY OUT",cursor="hand2",font = ("times new roman",7,"bold"), bg ="white",fg="black")
+        b5_1 = Button(bg_img1,text="YOUR WAY OUT",cursor="hand2",command=self.exit_app,font = ("times new roman",7,"bold"), bg ="white",fg="black")
         b5_1.place(x=700,y=625,width=125,height=20)
 
 
@@ -172,6 +172,14 @@ class face_recog_sys:
         )
         Label(top, text=msg, justify=LEFT, anchor="w", padx=12).pack(fill="both")
         Button(top, text="Close", command=top.destroy, width=10, pady=6).pack(pady=10)
+
+    def exit_app(self):
+        if messagebox.askyesno("Exit", "Are you sure you want to exit?"):
+            try:
+                self.root.quit()
+                self.root.destroy()
+            except Exception:
+                pass
 
     def user_data(self) :
         self.new_window=Toplevel(self.root)   

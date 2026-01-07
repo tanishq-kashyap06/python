@@ -54,6 +54,19 @@ class Face_Authentication :
                 f.writelines(f"\n{fet1},{fet2},{fet3},{fet4},{date_str},{d1}")
 
 
+    def _get_db_connection(self):
+        """Return a mysql.connector connection using env vars with sensible defaults.
+        Returns None and shows a dialog on failure."""
+        user = os.getenv("DB_USER", "root")
+        password = os.getenv("DB_PASS", "SHubh123")
+        host = os.getenv("DB_HOST", "127.0.0.1")
+        database = os.getenv("DB_NAME", "face_recognition")
+        try:
+            return mysql.connector.connect(user=user, password=password, host=host, database=database)
+        except mysql.connector.Error as err:
+            messagebox.showerror("Database Error", f"DB connection failed: {err}")
+            return None
+
 
     #face_authentication
     def face_authenticate(self):
@@ -68,24 +81,27 @@ class Face_Authentication :
                 id,predict=clf.predict(gray_img[y:y+h,x:x+w])   #GRAY SCALE IMAGE PREDICTION
                 histo=int((100*(1-predict/300))) #THE FORMULA OF CONFIDENCE FROM THE ALGORITHM
 
-                conn = mysql.connector.connect(host="localhost",username="root",password="Mayank@0422",database="face_recognition")
-                my_cursor = conn.cursor() #FETCHING DATA FROM DATABASE
-
-                my_cursor.execute("select `Department` from user_data where `ID No`="+str(id))
-                fet1=my_cursor.fetchone()
-                fet1="+".join(fet1)
-
-                my_cursor.execute("select `Position` from user_data where `ID No`="+str(id))
-                fet2=my_cursor.fetchone()
-                fet2="+".join(fet2)
-
-                my_cursor.execute("select `Name` from user_data where `ID No`="+str(id))
-                fet3=my_cursor.fetchone()
-                fet3="+".join(fet3)
-
-                my_cursor.execute("select `ID No` from user_data where `ID No`="+str(id))
-                fet4=my_cursor.fetchone()
-                fet4="+".join(fet4)
+                conn = self._get_db_connection()
+                if not conn:
+                    # If DB connection failed, fall back to unknown labels so UI keeps working
+                    fet1 = fet2 = fet3 = fet4 = "Unknown"
+                else:
+                    try:
+                        my_cursor = conn.cursor()
+                        my_cursor.execute("SELECT `Department`,`Position`,`Name`,`ID No` FROM user_data WHERE `ID No`=%s", (id,))
+                        row = my_cursor.fetchone()
+                        if row:
+                            fet1 = str(row[0]) if row[0] is not None else ""
+                            fet2 = str(row[1]) if row[1] is not None else ""
+                            fet3 = str(row[2]) if row[2] is not None else ""
+                            fet4 = str(row[3]) if row[3] is not None else ""
+                        else:
+                            fet1 = fet2 = fet3 = fet4 = "Unknown"
+                    except mysql.connector.Error as err:
+                        messagebox.showerror("Database Error", f"Query failed: {err}")
+                        fet1 = fet2 = fet3 = fet4 = "Unknown"
+                    finally:
+                        conn.close()
 
 
 
@@ -112,17 +128,95 @@ class Face_Authentication :
         clf=cv2.face.LBPHFaceRecognizer_create()
         clf.read("DataProcess.xml") 
 
-        cap=cv2.VideoCapture(0) #0 AS WE USING THE LAPTOP CAMERA
+        cap=cv2.VideoCapture(0) #0 AS WE ARE USING THE LAPTOP CAMERA
 
-        while True:
-            ret,img=cap.read()
-            img=authenticate(img,clf,FaceauthenCascade)
-            cv2.imshow("Face Authentication",img)
+        if not cap.isOpened():
+            messagebox.showerror("Camera Error","Could not open the camera. Make sure it's connected and not used by another app.")
+            return
 
-            if cv2.waitKey(1)==13: #KEEP THE CAMERA OPEN UNTIL ENTER PRESSED
-                break
-        cap.release()
-        cv2.destroyAllWindows()
+        # Try to read an initial frame to validate the camera
+        ret, test_frame = cap.read()
+        if not ret or test_frame is None:
+            messagebox.showerror("Camera Error","Failed to read from camera. Check permissions and that the camera is not used by another app.")
+            cap.release()
+            return
+
+        # Show the camera feed inside a Tkinter Toplevel window so it appears over the app
+        win = Toplevel(self.root)
+        win.title("Face Authentication")
+        win.geometry("660x540")
+        win.resizable(False, False)
+
+        frame_holder = Frame(win, width=640, height=480, bg="black")
+        frame_holder.pack(padx=10, pady=(10,5))
+        lmain = Label(frame_holder, width=640, height=480)
+        lmain.pack()
+
+        status_label = Label(win, text="Initializing...", anchor="w")
+        status_label.pack(fill='x', padx=10, pady=(0,10))
+
+        # placeholder image shown when there is an error
+        placeholder = Image.new('RGB', (640,480), (120,120,120))
+        placeholder_tk = ImageTk.PhotoImage(placeholder)
+        lmain.imgtk = placeholder_tk
+        lmain.configure(image=placeholder_tk)
+        status_label.config(text="Camera OK — starting feed")
+
+        def stop_camera():
+            if cap.isOpened():
+                cap.release()
+            win.destroy()
+            cv2.destroyAllWindows()
+
+        win.protocol("WM_DELETE_WINDOW", stop_camera)
+
+        def update_frame():
+            try:
+                ret, frame = cap.read()
+                if not ret or frame is None:
+                    status_label.config(text="Error: no frame received — retrying...")
+                    lmain.after(100, update_frame)
+                    return
+
+                frame = authenticate(frame,clf,FaceauthenCascade)
+
+                # validate frame type
+                if not isinstance(frame, np.ndarray):
+                    status_label.config(text="Error: processed frame invalid")
+                    lmain.imgtk = placeholder_tk
+                    lmain.configure(image=placeholder_tk)
+                    lmain.after(100, update_frame)
+                    return
+
+                # convert from BGR (OpenCV) to RGB (PIL) and resize to widget
+                cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                pil_image = Image.fromarray(cv2image).resize((640,480))
+                imgtk = ImageTk.PhotoImage(image=pil_image)
+                lmain.imgtk = imgtk
+                lmain.configure(image=imgtk)
+                status_label.config(text="Running")
+
+            except Exception as e:
+                # show the error to the user and keep the placeholder visible
+                status_label.config(text=f"Error: {e}")
+                lmain.imgtk = placeholder_tk
+                lmain.configure(image=placeholder_tk)
+
+            finally:
+                lmain.after(30, update_frame)
+
+        # prime the first frame with the test frame
+        try:
+            cv2image = cv2.cvtColor(test_frame, cv2.COLOR_BGR2RGB)
+            pil_image = Image.fromarray(cv2image).resize((640,480))
+            imgtk = ImageTk.PhotoImage(image=pil_image)
+            lmain.imgtk = imgtk
+            lmain.configure(image=imgtk)
+        except Exception:
+            lmain.imgtk = placeholder_tk
+            lmain.configure(image=placeholder_tk)
+
+        update_frame()
 
 
 
