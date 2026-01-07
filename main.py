@@ -4,6 +4,7 @@ from tkinter import ttk
 from PIL import Image,ImageTk
 from particular import Particulars
 import os
+from dev import Dev
 from face_authentication import Face_Authentication
 from process import Process_Data
 from records0fUser import RecordsOfUser
@@ -70,7 +71,7 @@ class face_recog_sys:
         img6 = img6.resize((150,150))
         self.photoimg6 = ImageTk.PhotoImage(img6)
 
-        b4= Button(bg_img1,image= self.photoimg6,borderwidth=0,cursor= "hand2")
+        b4= Button(bg_img1,image= self.photoimg6,borderwidth=0,cursor= "hand2", command=self.developer)
         b4.place(x=500,y=530,width=100,height=90)
 
         b4_1 = Button(bg_img1,text="DEVELOPER",cursor="hand2",font = ("times new roman",7,"bold"), bg ="white",fg="black")
@@ -142,6 +143,10 @@ class face_recog_sys:
     def face_data(self):
         self.new_window = Toplevel(self.root)
         self.app = Face_Authentication(self.new_window)  
+
+    def developer(self):
+        self.new_window = Toplevel(self.root)
+        self.app = Dev(self.new_window)
 
     def user_data(self) :
         self.new_window=Toplevel(self.root)   
