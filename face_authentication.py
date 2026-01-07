@@ -44,7 +44,7 @@ class Face_Authentication :
             user_data_record = f.readlines()
             name_record=[]
             for line in user_data_record:
-                input=line.split((","))
+                input=line.split((",")) 
                 name_record.append(input[0])
 
             if((fet1 not in name_record) and (fet2 not in name_record) and (fet3 not in name_record) and (fet4 not in name_record)):
