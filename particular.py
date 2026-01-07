@@ -332,8 +332,7 @@ class Particulars :
             messagebox.showerror("Error","Please Enter the Required Data",parent=self.root)
         else:
             try:
-                conn = mysql.connector.connect(host="localhost",username="root",password="Mayank@0422",database="face_recognition")
-                my_cursor = conn.cursor()
+                conn = mysql.connector.connect(user="root", password="SHubh123", host="127.0.0.1", database="face_recognition")
                 my_cursor.execute("insert into user_data values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",(
 
                                                                                                             self.var_dep.get(),
@@ -365,7 +364,7 @@ class Particulars :
 
     #Fetch Data
     def fetch_data(self):
-        conn = mysql.connector.connect(host="localhost",username="root",password="Mayank@0422",database="face_recognition")
+        conn = mysql.connector.connect(user="root", password="SHubh123", host="127.0.0.1", database="face_recognition")
         my_cursor = conn.cursor()
         my_cursor.execute("select * from user_data")
         data = my_cursor.fetchall()
@@ -408,7 +407,7 @@ class Particulars :
             try:
                 Upadate=messagebox.askyesno("Update","Do You Want to Update User Details",parent=self.root)
                 if Upadate>0:
-                    conn = mysql.connector.connect(host="localhost",username="root",password="Mayank@0422",database="face_recognition")
+                    conn = mysql.connector.connect(user="root", password="SHubh123", host="127.0.0.1", database="face_recognition")
                     my_cursor = conn.cursor()
                     my_cursor.execute("update user_data set `Department`=%s,`Position`=%s,`Admission Year`=%s,`Shift Hours`=%s,`Name`=%s,`Gender`=%s,`DOB`=%s,`Email ID`=%s,`Phone`=%s,`Address`=%s,`Zip Code`=%s,`Blood Group`=%s,`Alt No`=%s,`Image Status`=%s where `ID No` = %s",(
                          
@@ -448,7 +447,7 @@ class Particulars :
             try:
                 delete = messagebox.askyesno("Delete","Do You Want to Delete User Details ?",parent=self.root)
                 if delete>0:
-                    conn = mysql.connector.connect(host="localhost",username="root",password="Mayank@0422",database="face_recognition")
+                    conn = mysql.connector.connect(user="root", password="SHubh123", host="127.0.0.1", database="face_recognition")
                     my_cursor = conn.cursor()
                     sql= "delete from user_data where `ID No`=%s"
                     val=(self.var_id.get(),)
@@ -493,7 +492,7 @@ class Particulars :
             messagebox.showerror("Error","Please Enter the Required Data",parent=self.root)  
         else:
             try:
-                conn = mysql.connector.connect(host="localhost",username="root",password="Mayank@0422",database="face_recognition")
+                conn = mysql.connector.connect(user="root", password="SHubh123", host="127.0.0.1", database="face_recognition")
                 my_cursor = conn.cursor()  
                 my_cursor.execute("Select * from user_data") #TO SELECT ALL DATA from user data table
                 myresult=my_cursor.fetchall()
