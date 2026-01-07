@@ -1,6 +1,7 @@
 from multiprocessing.dummy import Process
 from tkinter import *
 from tkinter import ttk 
+from tkinter import messagebox 
 from PIL import Image,ImageTk
 from particular import Particulars
 import os
@@ -127,7 +128,15 @@ class face_recog_sys:
 
 
     def open_img(self):
-        os.startfile("data")
+        folder = "images"
+        folder_path = os.path.abspath(folder)
+        if os.path.exists(folder_path):
+            try:
+                os.startfile(folder_path)
+            except Exception as e:
+                messagebox.showerror("Error", f"Could not open folder: {e}")
+        else:
+            messagebox.showwarning("Not found", f"Folder '{folder}' not found in project root.\nMake sure you run the app from the project root or create the '{folder}' folder.")
 
 
 
