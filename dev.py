@@ -26,7 +26,7 @@ class Dev :
         dev_frame.place(x=5,y=5,width=510,height=340)
 
         #TEXT
-        tex_label=Label(dev_frame,text="Hi, I am Tanishq, a student from The LNM Institute of Information Technology",font= ("times new roman",12,"bold"),fg="purple2")
+        tex_label=Label(dev_frame,text="Hi, I am Tanishq, a student from The LNMIIT",font= ("times new roman",12,"bold"),fg="purple2")
         tex_label.place(x=0,y=5)
 
         tex_label=Label(dev_frame,text="This is my first ever project and i was very delighted to work on this as ",font= ("times new roman",12,"bold"),fg="purple2")

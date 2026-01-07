@@ -95,10 +95,10 @@ class face_recog_sys:
         img8 = img8.resize((170,130))
         self.photoimg8 = ImageTk.PhotoImage(img8)
 
-        b6= Button(bg_img1,image= self.photoimg8,borderwidth=0,cursor= "hand2")
+        b6= Button(bg_img1,image= self.photoimg8,borderwidth=0,cursor= "hand2", command=self.troubleshooting)
         b6.place(x=880,y=445,width=170,height=115)
 
-        b6_1 = Button(bg_img1,text="TROUBLESHOOTING",cursor="hand2",font = ("times new roman",7,"bold"), bg ="white",fg="black")
+        b6_1 = Button(bg_img1,text="TROUBLESHOOTING",cursor="hand2",command=self.troubleshooting,font = ("times new roman",7,"bold"), bg ="white",fg="black")
         b6_1.place(x=900,y=555,width=120,height=20)
 
 
@@ -147,6 +147,22 @@ class face_recog_sys:
     def developer(self):
         self.new_window = Toplevel(self.root)
         self.app = Dev(self.new_window)
+
+    def troubleshooting(self):
+        top = Toplevel(self.root)
+        top.title("Troubleshooting")
+        top.geometry("520x260")
+        top.resizable(False, False)
+        Label(top, text="Quick Troubleshooting Steps", font=("Helvetica",14,"bold"), pady=8).pack()
+        msg = (
+            "1. Ensure your camera is connected and not used by another app.\n"
+            "2. Confirm MySQL is running and credentials in 'face_authentication.py' are correct.\n"
+            "3. Make sure 'DataProcess.xml' and 'haarcascade_frontalface_default.xml' are in the project root.\n"
+            "4. Run the app from the project root with: python main.py\n"
+            "5. If you see cv2 errors, install 'opencv-contrib-python' and restart the app."
+        )
+        Label(top, text=msg, justify=LEFT, anchor="w", padx=12).pack(fill="both")
+        Button(top, text="Close", command=top.destroy, width=10, pady=6).pack(pady=10)
 
     def user_data(self) :
         self.new_window=Toplevel(self.root)   
